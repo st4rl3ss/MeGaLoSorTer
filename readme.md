@@ -1,20 +1,34 @@
 # MeGaLoSorTer
 
-MeGaLoSorTer generates MiSTer `.mgl` launcher files from a ROM directory and a CSV metadata database (PigSaint/GameDataBase format).
+MeGaLoSorTer generates MiSTer `.mgl` launcher files from a ROM directory and a PigSaint/GameDataBase CSV metadata file.
 
-It scans ROM files, computes SHA1 hashes, matches them against the CSV, and writes a menu-browsable `_Organized` folder tree on disk. Each generated `.mgl` launches a chosen MiSTer core and points at the ROM via a path relative to the core’s games folder.
+It scans ROM files, computes SHA1 hashes, matches them against the CSV, and writes a menu-browsable `_Organized` folder tree. Each generated `.mgl` launches a MiSTer core and points at the ROM via a path relative to the core’s games folder.
+
+## Supported systems (profiles)
+
+- Genesis / Mega Drive
+- SNES / Super Famicom
+
+(Additional systems can be added via profiles.)
 
 ## What it does
 
-- Reads the CSV and indexes entries by SHA1.
+- Loads the CSV and indexes entries by SHA1.
 - Scans a ROM directory for configured extensions.
-- Hashes each ROM (with an optional SQLite cache for faster re-runs).
+- Computes SHA1 for each ROM (with an optional SQLite cache for faster re-runs).
 - For matched ROMs, creates launchers organized by metadata facets:
   - `publisher`, `developer`, `genre`, `year`, `date`
-- For unmatched ROMs, can optionally still create launchers under `_Unmatched`.
-- Prefixes output folders with `_` so MiSTer’s menu will display them.
+- `genre` parsing supports PigSaint-style tokens such as:
+  - `#genre:action:adventure`
+  - `#genre:sim>building>train`
+  - `#genre:action>platformer:parlor>pachinko`
+- Optionally creates launchers for unmatched ROMs under `_Unmatched`.
+- Prefixes output folders with `_` so they are visible in the MiSTer menu.
 
 ## Key options
+
+- `--system genesis|snes`  
+  Select the system profile (sets core launch args + default extensions).
 
 - `--facets ...`  
   Choose which folder views to generate (e.g. `publisher developer genre date`).
@@ -45,17 +59,50 @@ It scans ROM files, computes SHA1 hashes, matches them against the CSV, and writ
 
 When run from a working directory, defaults are:
 
-- CSV: a `*.csv` in `./` (or `console_sega_megadrive_genesis.csv`)
+- CSV: a `*.csv` in `./` (or a conventional filename)
 - ROMs: `./ROMS`
 - Output: `./_Organized/_<setname>`
 
-## Example
+## Usage
+
+Dry run:
 
 ```bash
 python -m MeGaLoSorTer.cli --dry-run
+```
 
+Genesis example:
+
+```bash
 python -m MeGaLoSorTer.cli \
+  --system genesis \
   --facets publisher developer genre date \
   --date-depth 2 \
   --write-unmatched
-  
+```
+
+SNES example:
+
+```bash
+python -m MeGaLoSorTer.cli \
+  --system snes \
+  --romdir ./ROMS_SNES \
+  --csv ./console_nintendo_snes.csv \
+  --facets publisher developer genre date \
+  --date-depth 2 \
+  --write-unmatched
+```
+
+## Output
+
+The output is a tree of `.mgl` files under `_Organized/` with underscore-prefixed folders so the MiSTer menu will show them.
+
+Copy the generated `_Organized` tree to the MiSTer SD card (commonly `/media/fat/_Organized`) and browse it from the MiSTer main menu.
+
+## MiSTer notes
+
+The generated `.mgl` files include:
+
+- `<rbf>`: core path (e.g. `_Console/MegaDrive`, `_Console/SNES`)
+- `<setname>`: controls which `/media/usb0/games/<setname>/...` folder the launcher targets
+- `path="..."`: ROM path relative to that games folder (often prefixed by `nointro/`)
