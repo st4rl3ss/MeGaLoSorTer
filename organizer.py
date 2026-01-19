@@ -69,17 +69,44 @@ def iter_roms(root: Path, exts: set[str]) -> Iterable[Path]:
 
 
 def genre_buckets(tags: str, depth: int) -> List[List[str]]:
+    """
+    Parse PigSaint-style genre tags.
+
+    Examples:
+      #genre:action:adventure
+        -> ["action"], ["adventure"]
+
+      #genre:sim>building>train
+        -> ["sim", "building"]   (if depth=2)
+
+      #genre:action>platformer:parlor>pachinko
+        -> ["action", "platformer"], ["parlor", "pachinko"] (if depth=2)
+    """
     hits: List[List[str]] = []
+
     for tok in (tags or "").split():
-        m = GENRE_RE.match(tok)
-        if not m:
+        if not tok.startswith("#genre:"):
             continue
-        a = safe_name(m.group(1))
-        b = m.group(2)
-        parts = [a]
-        if depth >= 2 and b:
-            parts.append(safe_name(b))
-        hits.append(parts)
+
+        rest = tok[len("#genre:") :].strip()
+        if not rest:
+            continue
+
+        # Split into multiple genre groups (colon-separated)
+        for group in rest.split(":"):
+            group = group.strip()
+            if not group:
+                continue
+
+            # Split hierarchy levels (greater-than separated)
+            levels = [lvl.strip() for lvl in group.split(">") if lvl.strip()]
+            if not levels:
+                continue
+
+            # Apply depth (1 or 2 in your CLI)
+            levels = levels[: max(1, depth)]
+            hits.append([safe_name(lvl) for lvl in levels])
+
     return hits if hits else [["Unknown"]]
 
 
@@ -129,7 +156,9 @@ def run_system(cfg: SystemConfig) -> int:
 
     # Ensure output directory exists so SQLite can create/open the cache DB.
     cfg.outdir.mkdir(parents=True, exist_ok=True)
-    cache = HashCache(cfg.outdir / "hashcache.sqlite")  # per-output cache by default
+    cache_path = cfg.cache_path
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache = HashCache(cache_path)
 
     matched = unmatched = written = 0
     try:

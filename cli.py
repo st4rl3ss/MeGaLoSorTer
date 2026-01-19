@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from .profiles import PROFILES
 
 from .config import SystemConfig
 from .organizer import run_system
@@ -50,30 +51,37 @@ def build_argparser() -> argparse.ArgumentParser:
     ap.add_argument(
         "--outdir",
         type=Path,
-        default=root / "_Organized" / "_Genesis",
+        default=None,
         help="Output folder for generated .mgl tree. Defaults to ./_Organized/_Genesis",
     )
 
     ap.add_argument(
+        "--system",
+        choices=sorted(PROFILES.keys()),
+        default="genesis",
+        help="System profile to use (sets rbf/setname/file args/ext defaults).",
+    )
+
+    ap.add_argument(
         "--rbf",
-        default="_Console/MegaDrive",
+        default="None",
         help="MiSTer core path without .rbf/.timestamp, e.g. _Console/MegaDrive",
     )
     ap.add_argument(
         "--setname",
-        default="Genesis",
+        default="None",
         help="MiSTer setname (controls config/games folder name), e.g. Genesis",
     )
     ap.add_argument(
         "--prefix-in-core",
-        default="nointro",
+        default="None",
         help="Subfolder under the core games folder, e.g. nointro",
     )
 
     ap.add_argument(
         "--ext",
         nargs="*",
-        default=[".md", ".bin", ".gen", ".smd"],
+        default=None,
         help="ROM extensions to scan",
     )
     ap.add_argument(
@@ -109,6 +117,13 @@ def build_argparser() -> argparse.ArgumentParser:
         help="Compute matches and stats, but don’t write .mgl files",
     )
 
+    ap.add_argument(
+        "--cache",
+        type=Path,
+        default=Path.cwd() / "hashcache.sqlite",
+        help="SQLite cache path (default: ./hashcache.sqlite)",
+    )
+
     return ap
 
 
@@ -118,25 +133,31 @@ def main() -> int:
     # If user didn't override outdir, make it follow setname automatically:
     # ./_Organized/_<setname>
     root = Path.cwd()
-    default_outdir = root / "_Organized" / f"_{args.setname}"
-    if args.outdir == (root / "_Organized" / "_Genesis"):
-        args.outdir = default_outdir
+    profile = PROFILES[args.system]
+
+    rbf = args.rbf or profile.rbf
+    setname = args.setname or profile.setname
+    prefix = args.prefix_in_core or profile.prefix_in_core
+    exts = list(args.ext) if args.ext is not None else list(profile.exts)
+
+    outdir = args.outdir or (root / "_Organized" / f"_{setname}")
 
     cfg = SystemConfig(
-        name=args.setname,
+        name=setname,
         csv_path=args.csv,
         romdir=args.romdir,
-        outdir=args.outdir,
-        rbf=args.rbf,
-        setname=args.setname,
-        prefix_in_core=args.prefix_in_core,
-        exts=list(args.ext),
+        outdir=outdir,
+        cache_path=args.cache,
+        rbf=rbf,
+        setname=setname,
+        prefix_in_core=prefix,
+        exts=exts,
         facets=list(args.facets),
         genre_depth=args.genre_depth,
         date_depth=args.date_depth,
-        file_delay=1,
-        file_index=1,
-        file_type="f",
+        file_delay=profile.file_delay,
+        file_index=profile.file_index,
+        file_type=profile.file_type,
         name_source=args.name_source,
         on_collision=args.on_collision,
         write_unmatched=args.write_unmatched,

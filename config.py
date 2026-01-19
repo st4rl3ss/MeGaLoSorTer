@@ -15,6 +15,7 @@ class SystemConfig:
     csv_path: Path
     romdir: Path
     outdir: Path
+    cache_path: Path
 
     rbf: str  # e.g. "_Console/MegaDrive"
     setname: str  # e.g. "Genesis"
