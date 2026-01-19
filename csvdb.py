@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 # Your CSV headers
 CSV_SHA1 = "SHA1"
@@ -35,6 +35,7 @@ def detect_csv_dialect(csv_path: Path) -> csv.Dialect:
     try:
         return csv.Sniffer().sniff(sample, delimiters=[",", ";", "\t", "|"])
     except Exception:
+
         class Comma(csv.Dialect):
             delimiter = ","
             quotechar = '"'
@@ -42,6 +43,7 @@ def detect_csv_dialect(csv_path: Path) -> csv.Dialect:
             skipinitialspace = False
             lineterminator = "\n"
             quoting = csv.QUOTE_MINIMAL
+
         return Comma()
 
 
@@ -57,7 +59,9 @@ def load_db(csv_path: Path, verbose: bool = True) -> Dict[str, GameMeta]:
         if verbose:
             print(f"[CSV] headers({len(reader.fieldnames)}): {reader.fieldnames}")
 
-        missing = [h for h in [CSV_SHA1, CSV_TITLE, CSV_ID] if h not in reader.fieldnames]
+        missing = [
+            h for h in [CSV_SHA1, CSV_TITLE, CSV_ID] if h not in reader.fieldnames
+        ]
         if missing:
             raise SystemExit(f"[CSV] Missing required headers: {missing}")
 

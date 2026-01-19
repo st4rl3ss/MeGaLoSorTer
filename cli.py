@@ -22,7 +22,9 @@ def default_csv(root: Path) -> Path:
     if conventional.exists():
         return conventional
 
-    return csvs[0] if csvs else conventional  # conventional may not exist, but it's a sensible default
+    return (
+        csvs[0] if csvs else conventional
+    )  # conventional may not exist, but it's a sensible default
 
 
 def build_argparser() -> argparse.ArgumentParser:
@@ -30,39 +32,82 @@ def build_argparser() -> argparse.ArgumentParser:
 
     ap = argparse.ArgumentParser(
         prog="MeGaLoSorTer",
-        description="MeGaLoSorTer — generate MiSTer .mgl library views from PigSaint CSV + ROM sets."
+        description="MeGaLoSorTer — generate MiSTer .mgl library views from PigSaint CSV + ROM sets.",
     )
 
-    ap.add_argument("--csv", type=Path, default=default_csv(root),
-                    help="Path to the PigSaint CSV. Defaults to a CSV in the current directory.")
-    ap.add_argument("--romdir", type=Path, default=root / "ROMS",
-                    help="Folder containing ROMs. Defaults to ./ROMS")
-    ap.add_argument("--outdir", type=Path, default=root / "_Organized" / "_Genesis",
-                    help="Output folder for generated .mgl tree. Defaults to ./_Organized/_Genesis")
+    ap.add_argument(
+        "--csv",
+        type=Path,
+        default=default_csv(root),
+        help="Path to the PigSaint CSV. Defaults to a CSV in the current directory.",
+    )
+    ap.add_argument(
+        "--romdir",
+        type=Path,
+        default=root / "ROMS",
+        help="Folder containing ROMs. Defaults to ./ROMS",
+    )
+    ap.add_argument(
+        "--outdir",
+        type=Path,
+        default=root / "_Organized" / "_Genesis",
+        help="Output folder for generated .mgl tree. Defaults to ./_Organized/_Genesis",
+    )
 
-    ap.add_argument("--rbf", default="_Console/MegaDrive",
-                    help="MiSTer core path without .rbf/.timestamp, e.g. _Console/MegaDrive")
-    ap.add_argument("--setname", default="Genesis",
-                    help="MiSTer setname (controls config/games folder name), e.g. Genesis")
-    ap.add_argument("--prefix-in-core", default="nointro",
-                    help="Subfolder under the core games folder, e.g. nointro")
+    ap.add_argument(
+        "--rbf",
+        default="_Console/MegaDrive",
+        help="MiSTer core path without .rbf/.timestamp, e.g. _Console/MegaDrive",
+    )
+    ap.add_argument(
+        "--setname",
+        default="Genesis",
+        help="MiSTer setname (controls config/games folder name), e.g. Genesis",
+    )
+    ap.add_argument(
+        "--prefix-in-core",
+        default="nointro",
+        help="Subfolder under the core games folder, e.g. nointro",
+    )
 
-    ap.add_argument("--ext", nargs="*", default=[".md", ".bin", ".gen", ".smd"],
-                    help="ROM extensions to scan")
-    ap.add_argument("--facets", nargs="+", default=["publisher", "developer", "genre"],
-                    choices=["publisher", "developer", "genre", "year", "date"])
+    ap.add_argument(
+        "--ext",
+        nargs="*",
+        default=[".md", ".bin", ".gen", ".smd"],
+        help="ROM extensions to scan",
+    )
+    ap.add_argument(
+        "--facets",
+        nargs="+",
+        default=["publisher", "developer", "genre"],
+        choices=["publisher", "developer", "genre", "year", "date"],
+    )
     ap.add_argument("--genre-depth", type=int, default=2, choices=[1, 2])
     ap.add_argument("--date-depth", type=int, default=2, choices=[1, 2, 3])
 
-    ap.add_argument("--name-source", choices=["rom", "db"], default="rom",
-                    help="rom = use ROM filename for .mgl name; db = use DB title/region/id")
-    ap.add_argument("--on-collision", choices=["suffix", "skip-identical"], default="skip-identical",
-                    help="suffix = write __2 etc; skip-identical = skip if same content else suffix")
+    ap.add_argument(
+        "--name-source",
+        choices=["rom", "db"],
+        default="rom",
+        help="rom = use ROM filename for .mgl name; db = use DB title/region/id",
+    )
+    ap.add_argument(
+        "--on-collision",
+        choices=["suffix", "skip-identical"],
+        default="skip-identical",
+        help="suffix = write __2 etc; skip-identical = skip if same content else suffix",
+    )
 
-    ap.add_argument("--write-unmatched", action="store_true",
-                    help="Also write launchers for ROMs not found in the CSV under _Unmatched/")
-    ap.add_argument("--dry-run", action="store_true",
-                    help="Compute matches and stats, but don’t write .mgl files")
+    ap.add_argument(
+        "--write-unmatched",
+        action="store_true",
+        help="Also write launchers for ROMs not found in the CSV under _Unmatched/",
+    )
+    ap.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute matches and stats, but don’t write .mgl files",
+    )
 
     return ap
 

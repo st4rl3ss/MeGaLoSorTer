@@ -21,6 +21,7 @@ class HashCache:
     SQLite cache keyed by (path,size,mtime) -> sha1.
     Speeds up re-runs massively on big sets.
     """
+
     def __init__(self, db_path: Path):
         self.conn = sqlite3.connect(str(db_path))
         self.conn.execute("""

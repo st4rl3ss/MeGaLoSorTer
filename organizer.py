@@ -3,21 +3,32 @@ from __future__ import annotations
 import re
 from collections import Counter
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Iterable, List
 
 from .config import SystemConfig
 from .csvdb import GameMeta, load_db
-from .hashing import HashCache, sha1_file
+from .hashing import HashCache
 from .mgl import make_mgl
 from .naming import make_display_name, write_mgl_file
 from .util import menu_folder, safe_name
 
 GENRE_RE = re.compile(r"#genre:([^\s>]+)(?:>([^\s]+))?")
+YEAR_RE = re.compile(r"^\s*(\d{4})\b")
 
 
 MONTH_NAMES = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
 ]
 
 
@@ -72,7 +83,9 @@ def genre_buckets(tags: str, depth: int) -> List[List[str]]:
     return hits if hits else [["Unknown"]]
 
 
-def buckets_for(meta: GameMeta, facet: str, genre_depth: int, date_depth: int) -> List[List[str]]:
+def buckets_for(
+    meta: GameMeta, facet: str, genre_depth: int, date_depth: int
+) -> List[List[str]]:
     facet = facet.lower()
 
     if facet == "publisher":
@@ -82,7 +95,8 @@ def buckets_for(meta: GameMeta, facet: str, genre_depth: int, date_depth: int) -
         return [[safe_name(meta.developer)]]
 
     if facet == "year":
-        y = meta.release_date.split("-")[0].strip() if meta.release_date else "Unknown"
+        m = YEAR_RE.match(meta.release_date or "")
+        y = m.group(1) if m else "Unknown"
         return [[safe_name(y)]]
 
     if facet == "date":
@@ -117,7 +131,6 @@ def run_system(cfg: SystemConfig) -> int:
     cfg.outdir.mkdir(parents=True, exist_ok=True)
     cache = HashCache(cfg.outdir / "hashcache.sqlite")  # per-output cache by default
 
-
     matched = unmatched = written = 0
     try:
         for rom in roms:
@@ -142,9 +155,15 @@ def run_system(cfg: SystemConfig) -> int:
 
                 if not cfg.dry_run:
                     for facet in cfg.facets:
-                        for parts in buckets_for(meta, facet, cfg.genre_depth, cfg.date_depth):
+                        for parts in buckets_for(
+                            meta, facet, cfg.genre_depth, cfg.date_depth
+                        ):
                             # underscore jungle: EVERY folder in path gets underscore
-                            folder = cfg.outdir / menu_folder(facet.title()) / Path(*[menu_folder(p) for p in parts])
+                            folder = (
+                                cfg.outdir
+                                / menu_folder(facet.title())
+                                / Path(*[menu_folder(p) for p in parts])
+                            )
                             folder.mkdir(parents=True, exist_ok=True)
 
                             target = folder / f"{display}.mgl"
@@ -169,7 +188,7 @@ def run_system(cfg: SystemConfig) -> int:
     print(f"  matched:       {matched:,}")
     print(f"  unmatched:     {unmatched:,}")
     if total:
-        print(f"  match rate:    {matched/total*100:.1f}%")
+        print(f"  match rate:    {matched / total * 100:.1f}%")
     if cfg.dry_run:
         print("\n(dry-run) No MGL files were written.")
     else:

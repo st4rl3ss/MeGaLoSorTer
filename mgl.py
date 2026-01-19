@@ -15,7 +15,7 @@ def make_mgl(
         "<mistergamedescription>\n"
         f"  <rbf>{escape(rbf)}</rbf>\n"
         f"  <setname>{escape(setname)}</setname>\n"
-        f"  <file delay=\"{delay}\" type=\"{escape(ftype)}\" "
-        f"index=\"{index}\" path=\"{escape(rel_path_from_core_games_folder)}\"/>\n"
+        f'  <file delay="{delay}" type="{escape(ftype)}" '
+        f'index="{index}" path="{escape(rel_path_from_core_games_folder)}"/>\n'
         "</mistergamedescription>\n"
     )

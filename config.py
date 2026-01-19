@@ -10,26 +10,27 @@ class SystemConfig:
     """
     Configuration for one MiSTer 'system' (e.g. Genesis/MegaDrive).
     """
-    name: str                      # e.g. "Genesis"
+
+    name: str  # e.g. "Genesis"
     csv_path: Path
     romdir: Path
     outdir: Path
 
-    rbf: str                       # e.g. "_Console/MegaDrive"
-    setname: str                   # e.g. "Genesis"
-    prefix_in_core: str            # e.g. "nointro"
+    rbf: str  # e.g. "_Console/MegaDrive"
+    setname: str  # e.g. "Genesis"
+    prefix_in_core: str  # e.g. "nointro"
 
-    exts: List[str]                # e.g. [".md", ".bin", ...]
-    facets: List[str]              # e.g. ["publisher","developer","genre","date"]
+    exts: List[str]  # e.g. [".md", ".bin", ...]
+    facets: List[str]  # e.g. ["publisher","developer","genre","date"]
 
-    genre_depth: int = 2           # 1 or 2
-    date_depth: int = 2            # 1=Year, 2=Year/Month, 3=Year/Month/Day
+    genre_depth: int = 2  # 1 or 2
+    date_depth: int = 2  # 1=Year, 2=Year/Month, 3=Year/Month/Day
 
     file_delay: int = 1
     file_index: int = 1
     file_type: str = "f"
 
-    name_source: str = "rom"       # "rom" | "db"
+    name_source: str = "rom"  # "rom" | "db"
     on_collision: str = "skip-identical"  # "suffix" | "skip-identical"
     write_unmatched: bool = False
     dry_run: bool = False

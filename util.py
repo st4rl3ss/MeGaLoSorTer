@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 
-INVALID_CHARS = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
+INVALID_CHARS = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
 
 
 def safe_name(s: str) -> str:
