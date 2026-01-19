@@ -58,4 +58,4 @@ python -m MeGaLoSorTer.cli \
   --facets publisher developer genre date \
   --date-depth 2 \
   --write-unmatched
-
+  
