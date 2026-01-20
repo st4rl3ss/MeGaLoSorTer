@@ -136,7 +136,9 @@ def main() -> int:
     profile = PROFILES[args.system]
 
     rbf = args.rbf or profile.rbf
-    setname = args.setname or profile.setname
+    setname_raw = (args.setname or "").strip()
+    setname = args.system if setname_raw in ("", "None") else setname_raw
+
     prefix = args.prefix_in_core or profile.prefix_in_core
     exts = list(args.ext) if args.ext is not None else list(profile.exts)
 
