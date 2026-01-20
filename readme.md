@@ -106,3 +106,8 @@ The generated `.mgl` files include:
 - `<rbf>`: core path (e.g. `_Console/MegaDrive`, `_Console/SNES`)
 - `<setname>`: controls which `/media/usb0/games/<setname>/...` folder the launcher targets
 - `path="..."`: ROM path relative to that games folder (often prefixed by `nointro/`)
+
+
+## C64 .d64 support
+
+Launchers for .d64 images reference autorun.prg as a second file entry. Place autorun.prg in the C64 games folder on MiSTer (e.g. /media/usb0/games/C64/autorun.prg or the folder matching your `setname`).
