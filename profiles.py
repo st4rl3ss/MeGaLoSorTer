@@ -13,6 +13,21 @@ class SystemProfile:
     file_type: str
     exts: tuple[str, ...]
     prefix_in_core: str = "nointro"
+    slots: tuple["Slot", ...] | None = None
+
+
+@dataclass(frozen=True)
+class FileEntry:
+    delay: int
+    file_type: str
+    index: int
+    path: str | None = None
+
+
+@dataclass(frozen=True)
+class Slot:
+    exts: tuple[str, ...]
+    files: tuple[FileEntry, ...]
 
 
 PROFILES: dict[str, SystemProfile] = {
@@ -105,6 +120,19 @@ PROFILES: dict[str, SystemProfile] = {
         file_type="f",
         exts=(".prg", ".crt", ".reu", ".tap", ".d64"),
         prefix_in_core="nointro",
+        slots=(
+            Slot(
+                exts=(".d64",),
+                files=(
+                    FileEntry(delay=1, file_type="s", index=0),
+                    FileEntry(delay=0, file_type="f", index=1, path="autorun.prg"),
+                ),
+            ),
+            Slot(
+                exts=(".prg", ".crt", ".reu", ".tap"),
+                files=(FileEntry(delay=1, file_type="f", index=1),),
+            ),
+        ),
     ),
     "channelf": SystemProfile(
         system="channelf",
@@ -123,8 +151,18 @@ PROFILES: dict[str, SystemProfile] = {
         file_delay=1,
         file_index=1,
         file_type="f",
-        exts=(".col", ".bin", ".rom"),
+        exts=(".col", ".bin", ".rom", ".sg"),
         prefix_in_core="nointro",
+        slots=(
+            Slot(
+                exts=(".col", ".bin", ".rom"),
+                files=(FileEntry(delay=1, file_type="f", index=1),),
+            ),
+            Slot(
+                exts=(".sg",),
+                files=(FileEntry(delay=1, file_type="f", index=2),),
+            ),
+        ),
     ),
     "creativision": SystemProfile(
         system="creativision",
@@ -383,8 +421,18 @@ PROFILES: dict[str, SystemProfile] = {
         file_delay=1,
         file_index=1,
         file_type="f",
-        exts=(".sms", ".sg"),
+        exts=(".sms", ".sg", ".gg"),
         prefix_in_core="nointro",
+        slots=(
+            Slot(
+                exts=(".sms", ".sg"),
+                files=(FileEntry(delay=1, file_type="f", index=1),),
+            ),
+            Slot(
+                exts=(".gg",),
+                files=(FileEntry(delay=1, file_type="f", index=2),),
+            ),
+        ),
     ),
     "snes": SystemProfile(
         system="snes",

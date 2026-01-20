@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+from .profiles import Slot
 
 @dataclass(frozen=True)
 class SystemConfig:
@@ -21,15 +22,12 @@ class SystemConfig:
     setname: str  # e.g. "Genesis"
     prefix_in_core: str  # e.g. "nointro"
 
-    exts: List[str]  # e.g. [".md", ".bin", ...]
+    slots: List[Slot]
     facets: List[str]  # e.g. ["publisher","developer","genre","date"]
 
     genre_depth: int = 2  # 1 or 2
     date_depth: int = 2  # 1=Year, 2=Year/Month, 3=Year/Month/Day
 
-    file_delay: int = 1
-    file_index: int = 1
-    file_type: str = "f"
     system: str = ""
 
     name_source: str = "rom"  # "rom" | "db"

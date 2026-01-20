@@ -8,7 +8,7 @@ from typing import Iterable, List
 from .config import SystemConfig
 from .csvdb import GameMeta, load_db
 from .hashing import HashCache
-from .mgl import make_mgl, make_mgl_c64_d64
+from .mgl import make_mgl
 from .naming import make_display_name, write_mgl_file
 from .util import menu_folder, safe_name
 
@@ -148,7 +148,7 @@ def run_system(cfg: SystemConfig) -> int:
     print(f"[ROMDIR] {cfg.romdir}  files={sum(ext_counts.values()):,}")
     print(f"[ROMDIR] top extensions: {ext_counts.most_common(8)}")
 
-    exts = {e.lower() if e.startswith(".") else f".{e.lower()}" for e in cfg.exts}
+    exts = {e for s in cfg.slots for e in s.exts}
     roms = list(iter_roms(cfg.romdir, exts))
     print(f"[ROMDIR] ROM candidates={len(roms):,}  (exts={sorted(exts)})")
     if not roms:
@@ -169,23 +169,19 @@ def run_system(cfg: SystemConfig) -> int:
             rel_inside_romdir = rom.relative_to(cfg.romdir).as_posix()
             mgl_target_path = f"{cfg.prefix_in_core}/{rel_inside_romdir}"
 
-            # Special handling for C64 .d64 files
-
-            if cfg.system.lower() == "c64" and rom.suffix.lower() == ".d64":
-                mgl_text = make_mgl_c64_d64(
-                    rbf=cfg.rbf,
-                    setname=cfg.setname,
-                    rel_path_from_core_games_folder=mgl_target_path,
-                )
-            else:
-                mgl_text = make_mgl(
-                    rbf=cfg.rbf,
-                    setname=cfg.setname,
-                    delay=cfg.file_delay,
-                    ftype=cfg.file_type,
-                    index=cfg.file_index,
-                    rel_path_from_core_games_folder=mgl_target_path,
-                )
+            slot = next(
+                (s for s in cfg.slots if rom.suffix.lower() in s.exts),
+                cfg.slots[0],
+            )
+            files = []
+            for entry in slot.files:
+                path = entry.path if entry.path is not None else mgl_target_path
+                files.append((entry.delay, entry.file_type, entry.index, path))
+            mgl_text = make_mgl(
+                rbf=cfg.rbf,
+                setname=cfg.setname,
+                files=files,
+            )
 
             if meta:
                 matched += 1

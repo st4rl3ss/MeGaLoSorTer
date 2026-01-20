@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from .profiles import PROFILES
+from .profiles import FileEntry, PROFILES, Slot
 
 from .config import SystemConfig
 from .organizer import run_system
@@ -64,17 +64,17 @@ def build_argparser() -> argparse.ArgumentParser:
 
     ap.add_argument(
         "--rbf",
-        default="None",
+        default=None,
         help="MiSTer core path without .rbf/.timestamp, e.g. _Console/MegaDrive",
     )
     ap.add_argument(
         "--setname",
-        default="None",
+        default=None,
         help="MiSTer setname (controls config/games folder name), e.g. Genesis",
     )
     ap.add_argument(
         "--prefix-in-core",
-        default="None",
+        default=None,
         help="Subfolder under the core games folder, e.g. nointro",
     )
 
@@ -135,16 +135,46 @@ def main() -> int:
     root = Path.cwd()
     profile = PROFILES[args.system]
 
+    def normalize_ext(ext: str) -> str:
+        e = (ext or "").strip().lower()
+        return e if e.startswith(".") else f".{e}"
+
+    if profile.slots:
+        slots = tuple(
+            Slot(exts=tuple(normalize_ext(e) for e in s.exts), files=s.files)
+            for s in profile.slots
+        )
+    else:
+        default_slot = Slot(
+            exts=tuple(normalize_ext(e) for e in profile.exts),
+            files=(
+                FileEntry(
+                    delay=profile.file_delay,
+                    file_type=profile.file_type,
+                    index=profile.file_index,
+                ),
+            ),
+        )
+        slots = (default_slot,)
+
     rbf = args.rbf or profile.rbf
-    setname_raw = (args.setname or "").strip()
-    setname = args.system if setname_raw in ("", "None") else setname_raw
+    setname = args.setname or profile.setname
 
     prefix = args.prefix_in_core or profile.prefix_in_core
-    exts = list(args.ext) if args.ext is not None else list(profile.exts)
+    if args.ext is not None:
+        desired = {normalize_ext(e) for e in args.ext}
+        filtered: list[Slot] = []
+        for slot in slots:
+            slot_exts = tuple(e for e in slot.exts if e in desired)
+            if slot_exts:
+                filtered.append(Slot(exts=slot_exts, files=slot.files))
+        slots = tuple(filtered)
+        if not slots:
+            raise SystemExit(
+                "[ERR] --ext did not match any extensions in the selected profile."
+            )
 
     outdir = args.outdir or (root / "_Organized" / f"_{setname}")
-    if args.outdir and outdir.name != f"_{setname}":
-        outdir = outdir / f"_{setname}"
 
     cfg = SystemConfig(
         name=setname,
@@ -155,13 +185,10 @@ def main() -> int:
         rbf=rbf,
         setname=setname,
         prefix_in_core=prefix,
-        exts=exts,
+        slots=list(slots),
         facets=list(args.facets),
         genre_depth=args.genre_depth,
         date_depth=args.date_depth,
-        file_delay=profile.file_delay,
-        file_index=profile.file_index,
-        file_type=profile.file_type,
         name_source=args.name_source,
         on_collision=args.on_collision,
         write_unmatched=args.write_unmatched,
