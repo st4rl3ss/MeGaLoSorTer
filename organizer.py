@@ -170,7 +170,8 @@ def run_system(cfg: SystemConfig) -> int:
             mgl_target_path = f"{cfg.prefix_in_core}/{rel_inside_romdir}"
 
             # Special handling for C64 .d64 files
-            if cfg.name == "C64" and rom.suffix.lower() == ".d64":
+
+            if cfg.system.lower() == "c64" and rom.suffix.lower() == ".d64":
                 mgl_text = make_mgl_c64_d64(
                     rbf=cfg.rbf,
                     setname=cfg.setname,

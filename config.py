@@ -30,6 +30,7 @@ class SystemConfig:
     file_delay: int = 1
     file_index: int = 1
     file_type: str = "f"
+    system: str = ""
 
     name_source: str = "rom"  # "rom" | "db"
     on_collision: str = "skip-identical"  # "suffix" | "skip-identical"

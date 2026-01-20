@@ -162,6 +162,7 @@ def main() -> int:
         on_collision=args.on_collision,
         write_unmatched=args.write_unmatched,
         dry_run=args.dry_run,
+        system=args.system,
     )
 
     return run_system(cfg)
