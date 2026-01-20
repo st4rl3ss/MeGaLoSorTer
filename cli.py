@@ -141,6 +141,8 @@ def main() -> int:
     exts = list(args.ext) if args.ext is not None else list(profile.exts)
 
     outdir = args.outdir or (root / "_Organized" / f"_{setname}")
+    if args.outdir and outdir.name != f"_{setname}":
+        outdir = outdir / f"_{setname}"
 
     cfg = SystemConfig(
         name=setname,
