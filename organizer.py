@@ -8,7 +8,7 @@ from typing import Iterable, List
 from .config import SystemConfig
 from .csvdb import GameMeta, load_db
 from .hashing import HashCache
-from .mgl import make_mgl
+from .mgl import make_mgl, make_mgl_c64_d64
 from .naming import make_display_name, write_mgl_file
 from .util import menu_folder, safe_name
 
@@ -169,14 +169,22 @@ def run_system(cfg: SystemConfig) -> int:
             rel_inside_romdir = rom.relative_to(cfg.romdir).as_posix()
             mgl_target_path = f"{cfg.prefix_in_core}/{rel_inside_romdir}"
 
-            mgl_text = make_mgl(
-                rbf=cfg.rbf,
-                setname=cfg.setname,
-                delay=cfg.file_delay,
-                ftype=cfg.file_type,
-                index=cfg.file_index,
-                rel_path_from_core_games_folder=mgl_target_path,
-            )
+            # Special handling for C64 .d64 files
+            if cfg.name == "C64" and rom.suffix.lower() == ".d64":
+                mgl_text = make_mgl_c64_d64(
+                    rbf=cfg.rbf,
+                    setname=cfg.setname,
+                    rel_path_from_core_games_folder=mgl_target_path,
+                )
+            else:
+                mgl_text = make_mgl(
+                    rbf=cfg.rbf,
+                    setname=cfg.setname,
+                    delay=cfg.file_delay,
+                    ftype=cfg.file_type,
+                    index=cfg.file_index,
+                    rel_path_from_core_games_folder=mgl_target_path,
+                )
 
             if meta:
                 matched += 1
